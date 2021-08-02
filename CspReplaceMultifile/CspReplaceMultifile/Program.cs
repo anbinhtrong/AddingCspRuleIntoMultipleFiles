@@ -12,7 +12,7 @@ namespace CspReplaceMultifile
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            var path = @"D:\Practice\.NET\ContentSecurityPolicyExample\ContentSecurityPolicyExample\Views";
+            var path = @"D:\Practice\.NET\ContentSecurityPolicyExample\ContentSecurityPolicyExample";
             ModifyRazorFile(path, "cshtml");
         }
 
