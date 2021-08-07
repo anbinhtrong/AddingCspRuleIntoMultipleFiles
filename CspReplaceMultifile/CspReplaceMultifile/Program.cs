@@ -18,7 +18,8 @@ namespace CspReplaceMultifile
 
         private static bool ModifyRazorFile(string folderPath, string extension)
         {
-            var files = FileExtensions.GetFilePaths(folderPath, extension);
+            var fileExtension = new FileExtensions();
+            var files = fileExtension.GetFilePaths(folderPath, extension);
             if (files.Count == 0) return false;
             var scriptTemplateStartWith = "<script";//
             var cspNameSpaceStartWith = "@using NWebsec.Mvc.HttpHeaders.Csp";
@@ -31,40 +32,28 @@ namespace CspReplaceMultifile
                 //check csp exist
                 //1-check script is exist in the file
                 var lines = File.ReadLines(path).ToList();
-                var hasCspNamespace = lines.Any(line => (line.StartsWith(cspNameSpaceStartWith)));                
-                if(hasCspNamespace == false)
-                {
+                var hasCspNamespace = lines.Any(line => (line.StartsWith(cspNameSpaceStartWith)));
+                var modified = false;
+                if (hasCspNamespace == false)
+                {                    
                     var hasUnsafeScript = lines.Any(line => (line.Contains(scriptTemplateStartWith) && !line.Contains("src")));
-                    if (!hasUnsafeScript)
+                    if (hasUnsafeScript)
                     {
-                        continue;
-                    }
-                    var tmpLines = new List<string>();
-                    tmpLines.Add("@using NWebsec.Mvc.HttpHeaders.Csp");
-                    foreach (var line in lines)
-                    {
-                        var regex = Regex.Match(line, pattern);
-                        if (regex.Success)
-                        {
-                            if (line.Contains("@Html.CspScriptNonce()") || line.Contains("src"))
-                            {
-                                tmpLines.Add(line);
-                                continue;
-                            }
-                            var index = line.IndexOf(scriptTemplateStartWith);
-                            var newLine = line.Substring(0, index + 7) + " @Html.CspScriptNonce()" + line.Substring(index + 7, line.Length - index - 7);
-                            tmpLines.Add(newLine);
-                        }
-                        else
-                        {
-                            tmpLines.Add(line);
-                        }
-                    }
-                    File.WriteAllLines(path, tmpLines);
-                    tmpLines.Clear();
-                }                
+                        lines = fileExtension.AddNonce(lines, pattern, scriptTemplateStartWith);
+                        modified = true;
+                    }                                        
+                }
+                if (fileExtension.HasJavascriptVoid(lines))
+                {
+                    lines = fileExtension.RemoveJavasscriptVoid(lines);
+                    modified = true;
+                }
+                if (modified)
+                    File.WriteAllLines(path, lines);
             }           
             return true;
         }
+
+        
     }
 }
