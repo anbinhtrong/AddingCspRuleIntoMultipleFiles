@@ -107,7 +107,7 @@ namespace CspReplaceMultifile
                     var newLine = @"        $('document').ready(function () {
             $('.hyperlink').click(function (e) {
                 e.preventDefault();
-            }
+            });
         });";
                     finalResult.Add(newLine);
                     hasJsVoid = false;
@@ -116,10 +116,10 @@ namespace CspReplaceMultifile
             if (hasJsVoid)
             {
                 var newLine = @"<script type='text/javascript'>
-$('document').ready(function () {
+        $('document').ready(function () {
             $('.hyperlink').click(function (e) {
                 e.preventDefault();
-            }
+            });
         });
 </script>";
                 finalResult.Add(newLine);
