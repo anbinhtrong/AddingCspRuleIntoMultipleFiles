@@ -65,6 +65,57 @@ namespace CspReplaceMultifile
             return result;
         }
 
+        public List<string> ReplaceJavasscriptVoid(List<string> lines)
+        {
+            var pattern = "href=\\s*[\",\']\\s*javascript:\\s*void\\(0\\)\\s*;*\\s*[\",\']";
+            var jsFilePattern = "<script.*?src=[\",\'](.*?)[\",\']>";
+            var result = new List<string>();
+            var hasJsVoid = false;
+            foreach (var line in lines)
+            {
+                var regex = Regex.Match(line, pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                var hasModified = false;
+                var tmpLine = string.Empty;
+                if (regex.Success)
+                {
+                    // Find matches.
+                    var matchValue = regex.Value;
+                    Console.WriteLine(matchValue);
+                    tmpLine = line.Replace(matchValue, "href class='hyperlink'");
+                    hasModified = true;
+                    hasJsVoid = true;
+                }
+                if (hasModified)
+                {                                        
+                    result.Add(tmpLine);                    
+                }
+                else
+                    result.Add(line);
+            }            
+            if (!hasJsVoid) return result;
+            var finalResult = new List<string>();
+            for (var i = 0; i < result.Count; i++)
+            {
+                finalResult.Add(result[i]);
+                if (result[i].Contains("<script") && hasJsVoid)
+                {
+                    var regexSrc = Regex.Match(result[i], jsFilePattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                    if (regexSrc.Success)
+                    {
+                        continue;
+                    }                    
+                    var newLine = @"        $('document').ready(function () {
+            $('.hyperlink').click(function (e) {
+                e.preventDefault();
+            }
+        });";
+                    finalResult.Add(newLine);
+                    hasJsVoid = false;
+                }                
+            }
+            return finalResult;
+        }
+
         public List<string> AddNonce(List<string> lines, string pattern, string scriptTemplateStartWith)
         {
             var tmpLines = new List<string>

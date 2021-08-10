@@ -13,7 +13,8 @@ namespace CspReplaceMultifile
         {
             Console.WriteLine("Hello World!");
             var path = @"D:\Practice\.NET\ContentSecurityPolicyExample\ContentSecurityPolicyExample";
-            ModifyRazorFile(path, "cshtml");
+            //ModifyRazorFile(path, "cshtml");
+            ReplaceJavascriptVoid(path, "cshtml");
         }
 
         private static bool ModifyRazorFile(string folderPath, string extension)
@@ -54,6 +55,31 @@ namespace CspReplaceMultifile
             return true;
         }
 
-        
+        private static bool ReplaceJavascriptVoid(string folderPath, string extension)
+        {
+            var fileExtension = new FileExtensions();
+            var files = fileExtension.GetFilePaths(folderPath, extension);
+            if (files.Count == 0) return false;            
+            foreach (var path in files)
+            {
+                var file = new FileInfo(path);
+                if (!file.Exists)
+                    continue;
+                //check csp exist
+                //1-check script is exist in the file
+                var lines = File.ReadLines(path).ToList();
+                var modified = false;                
+                if (fileExtension.HasJavascriptVoid(lines))
+                {
+                    lines = fileExtension.ReplaceJavasscriptVoid(lines);
+                    modified = true;
+                }
+                if (modified)
+                    File.WriteAllLines(path, lines);
+            }
+            return true;
+        }
+
+
     }
 }
