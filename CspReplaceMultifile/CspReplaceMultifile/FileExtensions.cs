@@ -113,6 +113,17 @@ namespace CspReplaceMultifile
                     hasJsVoid = false;
                 }                
             }
+            if (hasJsVoid)
+            {
+                var newLine = @"<script type='text/javascript'>
+$('document').ready(function () {
+            $('.hyperlink').click(function (e) {
+                e.preventDefault();
+            }
+        });
+</script>";
+                finalResult.Add(newLine);
+            }
             return finalResult;
         }
 
